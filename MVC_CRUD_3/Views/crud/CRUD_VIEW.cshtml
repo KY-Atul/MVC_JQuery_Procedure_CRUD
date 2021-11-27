@@ -1,0 +1,220 @@
+﻿
+@{
+    ViewBag.Title = "CRUD_VIEW";
+}
+
+<h2>CRUD_VIEW</h2>
+
+<center>
+    <table cellpadding="10" cellspacing="10">
+        <tr>
+            <td colspan="2" align="center"><h3>Simply Register here...!</h3></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td align="center">Name:</td>
+            <td><input type="text" id="txt_name" placeholder="Your Name Please" style="font-size:12px; text-align:left;" /></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td align="center">Address:</td>
+            <td><input type="text" id="txt_address" placeholder="Your Address Please" style="font-size: 12px; text-align: left;" /></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td align="center">Age:</td>
+            <td><input type="text" id="txt_age" placeholder="Your Age Please" style="font-size: 12px; text-align: left;" /></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center"><input type="button" id="btn_submit" value="Submit" onclick="insert()" /></td>
+        </tr>
+
+    </table>
+
+    <br/>
+    <br/>
+
+    <table id="tbl_display" cellpadding="10" cellspacing="50" border="0">
+        <tr>
+            <th style="text-align:center">Name</th>
+            <th>&nbsp;&nbsp;&nbsp;</th>
+            <th style="text-align:center">Address</th>
+            <th>&nbsp;&nbsp;&nbsp;</th>
+            <th style="text-align:center">Age</th>
+
+        </tr>
+
+    </table>
+
+</center>
+
+<script src="~/Scripts/jquery-3.4.1.js"></script>
+
+<script type="text/javascript">
+
+    var id_for_update=0;
+    jQuery(document).ready(function () {
+        show();
+    });
+
+    function clear() {
+
+        jQuery("#txt_name").val("");
+        jQuery("#txt_address").val("");
+        jQuery("#txt_age").val("");
+        id = 0;
+    }
+
+    function insert() {
+
+        if (jQuery("#btn_submit").val() == "Submit") {
+            jQuery.ajax({
+                url: 'crud/ins',
+                type: 'post',
+                data: {
+
+                    name: jQuery("#txt_name").val(),
+                    address: jQuery("#txt_address").val(),
+                    age: jQuery("#txt_age").val()
+                },
+
+                success: function () {
+                    alert('Success...DATA SAVED');
+                    clear();
+                    show();
+                },
+
+                error: function () {
+
+                    alert('Failure...data not saved');
+                }
+            });
+        }
+
+        else {
+            jQuery.ajax({
+                url: 'crud/upd',
+                type: 'post',
+                data: {
+                    name: jQuery("#txt_name").val(),
+                    address: jQuery("#txt_address").val(),
+                    age: jQuery("#txt_age").val(),
+                    _id: id_for_update,
+
+                },
+                success: function () {
+                    alert('Success...data updated');
+                    show();
+                    clear();
+                    jQuery("#btn_submit").val("Submit");
+                },
+                error: function () {
+                    alert('Failure...data not updated');
+                }
+            });
+
+        }
+
+
+
+        }
+
+
+    function show() {
+
+        jQuery.ajax({
+            url: 'crud/dis',
+            type: 'post',
+            data: {},
+            success: function (Data) {
+                Data = JSON.parse(Data);
+
+                jQuery("#tbl_display").find("tr:gt(0)").remove();
+
+                for (var i = 0; i < Data.length; i++) {
+
+                    jQuery("#tbl_display").append(
+
+                        '<tr>' +
+                        '<td style="text-align:center;">' + Data[i].name + '</td>' +
+                        '<td>&nbsp;&nbsp;&nbsp;</td>' +
+                        '<td style="text-align:center;">' + Data[i].address + '</td>' +
+                        '<td>&nbsp;&nbsp;&nbsp;</td>' +
+                        '<td style="text-align:center;">' + Data[i].age + '</td>' +
+                        '<td> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>' +
+                        '<td>' + '<input type="button" id="btn_delete" value="Delete" onclick="_delete(' + Data[i].student_id + ')">&nbsp;' + '</td>' +
+                        '<td>' + '<input type="button" id="btn_edit" value="Edit" onclick="edit(' + Data[i].student_id + ')">' + '</td>' +
+                        '</tr>'
+                    );
+                }
+
+            },
+            error: function () {
+                alert('data cannot be displayed');
+            }
+
+
+        });
+    }
+
+    function _delete (id){
+
+        if (confirm('Do you want to delete this record? This can not be undone')) {
+            jQuery.ajax({
+                url: 'crud/del',
+                type: 'post',
+                data: { _id: id },
+                success: function () {
+                    alert('data deleted successfully...!');
+                    show();
+                },
+                error: function () {
+                    alert('failure to delete data...!');
+                }
+            });
+        }
+    }
+
+    function edit(id) {
+
+        jQuery.ajax({
+
+            url: 'crud/edi',
+            type: 'post',
+            data: { _id: id },
+            success: function (data_edit) {
+
+                data_edit = JSON.parse(data_edit);
+
+                jQuery("#txt_name").val(data_edit[0].name);
+                jQuery("#txt_address").val(data_edit[0].address);
+                jQuery("#txt_age").val(data_edit[0].age);
+                id_for_update = data_edit[0].student_id;
+
+                jQuery("#btn_submit").val("Update");
+
+            },
+
+            error: function () {
+                alert('Something went Wrong...failed to edit');
+            }
+
+        });
+
+    }
+
+
+
+</script>
